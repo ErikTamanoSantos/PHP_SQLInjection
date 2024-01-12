@@ -7,16 +7,16 @@
 </head>
 <body>
     <form method="post">
-        <h1>Login</h1>
+        <h1>Afegir usuari</h1>
         <label for="username">Username: </label>
         <input type="text" name="username" id="username"><br>
         <label for="password">Password: </label>
         <input type="password" name="password" id="password"><br>
-        <input type="submit" value="Login"><br>
+        <input type="submit" value="Crear"><br>
+        <a href="dashboard.php">Tornar</a>
     </form>
 
-    <?php 
-    session_start();
+    <?php
     if (isset($_POST["username"])) {
         try {
             $hostname = "localhost";
@@ -34,23 +34,22 @@
         if (str_contains($username, ";") or str_contains($username, "--") or str_contains($username, "/*") or str_contains($username, "*/") or str_contains($password, ";") or str_contains($password, "--") or str_contains($password, "/*") or str_contains($password, "*/")) {
             echo "<p>Login incorrecte</p>";
         } else {
-            $query = $pdo -> prepare("SELECT * FROM users WHERE username = ? AND password = SHA2(?, 512) ;");
+            $query = $pdo -> prepare("SELECT * FROM users WHERE username = ?;");
             $query->bindParam(1, $username);
-            $query->bindParam(2, $password);
             $query -> execute();
 
             $row = $query -> fetch();
             if ($row) {
-                $_SESSION["username"] = $row["username"];
-                echo "http://$_SERVER[HTTP_HOST]/dashboard.php";
-                header("Location: http://$_SERVER[HTTP_HOST]/dashboard.php", true, 302);
+                echo "<p>L'usuari ja existeix</p>";
             } else {
-                echo "<p>Login incorrecte</p>";
+                $query = $pdo -> prepare("INSERT INTO users VALUES (?, SHA2(?, 512));");
+                $query->bindParam(1, $username);
+                $query->bindParam(2, $password);
+                $query-> execute();
+                echo "<p>Usuari creat correctament</p>";
             }
         }
     }
-
-    // User 'erik', Password '123'
     ?>
 </body>
 </html>

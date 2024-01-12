@@ -7,17 +7,17 @@
 </head>
 <body>
     <form method="post">
-        <h1>Login</h1>
-        <label for="username">Username: </label>
-        <input type="text" name="username" id="username"><br>
-        <label for="password">Password: </label>
-        <input type="password" name="password" id="password"><br>
-        <input type="submit" value="Login"><br>
+        <h1>Canviar Contrasenya</h1>
+        <label for="cur_pas">Contrasenya actual: </label>
+        <input type="password" name="cur_pas" id="cur_pas"><br>
+        <label for="new_pas">Contrasenya nova: </label>
+        <input type="password" name="new_pas" id="new_pas"><br>
+        <input type="submit" value="Confirmar"><br>
+        <a href="dashboard.php">Tornar</a>
     </form>
-
-    <?php 
+    <?php
     session_start();
-    if (isset($_POST["username"])) {
+    if (isset($_POST["cur_pas"]) and isset($_POST["new_pas"])) {
         try {
             $hostname = "localhost";
             $dbname = "php_login";
@@ -29,28 +29,29 @@
             exit;
         }
 
-        $username = $_POST["username"];
-        $password = $_POST["password"];
+        $username = $_SESSION["username"];
+        $cur_pas = $_POST["cur_pas"];
+        $new_pas = $_POST["new_pas"];
         if (str_contains($username, ";") or str_contains($username, "--") or str_contains($username, "/*") or str_contains($username, "*/") or str_contains($password, ";") or str_contains($password, "--") or str_contains($password, "/*") or str_contains($password, "*/")) {
-            echo "<p>Login incorrecte</p>";
+            echo "<p>Contrasenya incorrecta</p>";
         } else {
             $query = $pdo -> prepare("SELECT * FROM users WHERE username = ? AND password = SHA2(?, 512) ;");
             $query->bindParam(1, $username);
-            $query->bindParam(2, $password);
+            $query->bindParam(2, $cur_pas);
             $query -> execute();
 
             $row = $query -> fetch();
             if ($row) {
-                $_SESSION["username"] = $row["username"];
-                echo "http://$_SERVER[HTTP_HOST]/dashboard.php";
-                header("Location: http://$_SERVER[HTTP_HOST]/dashboard.php", true, 302);
+                $query = $pdo -> prepare("UPDATE users SET password = SHA2(?, 512) WHERE username = ?;");
+                $query->bindParam(1, $new_pas);
+                $query->bindParam(2, $username);
+                $query -> execute();
+                echo "<p>Contrasenya canviada correctament</p>";
             } else {
-                echo "<p>Login incorrecte</p>";
+                echo "<p>Contrasenya incorrecta.</p>";
             }
         }
     }
-
-    // User 'erik', Password '123'
     ?>
 </body>
 </html>
